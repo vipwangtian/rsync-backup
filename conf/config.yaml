@@ -1,0 +1,45 @@
+#此区域是rsync指令区块
+RSYNC:
+  #rsync使用的用户
+  user: root
+  #rsync指令-a
+  archive: on
+  #rsync指令-v
+  verbose: on
+  #rsync指令-z
+  compress: on
+  #rsync指令--compress-level，仅当-z开启时生效
+  compress-level: 9
+  #rsync指令-r
+  recursive: on
+  #rsync指令-t
+  times: on
+  #rsync指令--min-size
+  min-size: 1k
+  #日期指令的格式
+  date-formatter: "%Y-%m-%d"
+  #生成的结果页面路径
+  result-dir: html/
+
+#此区块为任务区，内容为任务数组
+#支持的指令
+#{date{<+->%d}} 代表当前日期（可以带偏移量，+days或者-days）
+#{host} 代表job中的host配置节
+JOB:
+    #任务名称
+  - name: test1
+    #rsync的目标主机
+    host: 192.168.112.51
+    #任务权重，暂时保留
+    priority: 1
+    #rsync的源文件通配符
+    backup: /var/log/nginx/oldLogFiles/www.517.cn.*.log.{date-1}
+    #rsync目标文件夹
+    target: /tmp/test_rsync/{host}
+
+  - name: test2
+    priority: 1
+    host: 192.168.112.61
+    backup: /var/log/nginx/oldLogFiles/www.517.cn.*.log.{date-1}
+    target: /tmp/test_rsync/{host}
+    

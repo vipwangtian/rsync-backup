@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head> 
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="scripts/jquery-easyui-1.5.3/themes/metro-gray/easyui.css">
+    <link rel="stylesheet" type="text/css" href="scripts/jquery-easyui-1.5.3/themes/icon.css">
+    <script type="text/javascript" src="scripts/jquery-easyui-1.5.3/jquery.min.js"></script>
+    <script type="text/javascript" src="scripts/jquery-easyui-1.5.3/jquery.easyui.min.js"></script>
+    <script type="text/javascript">
+        Date.prototype.Format = function (fmt) { //author: meizz 
+            var o = {
+                "M+": this.getMonth() + 1, //月份 
+                "d+": this.getDate(), //日 
+                "h+": this.getHours(), //小时 
+                "m+": this.getMinutes(), //分 
+                "s+": this.getSeconds(), //秒 
+                "q+": Math.floor((this.getMonth() + 3) / 3), //季度 
+                "S": this.getMilliseconds() //毫秒 
+            };
+            if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+            for (var k in o)
+            if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+            return fmt;
+        }
+
+        $.fn.datebox.defaults.formatter = function(date){
+            return date.Format("yyyy-MM-dd");
+        }
+
+        $.fn.datebox.defaults.parser = function(s){
+            var t = Date.parse(s);
+            if (!isNaN(t)){
+                return new Date(t);
+            } else {
+                return new Date();
+            }
+        }
+
+        $(function(){
+            initDG();
+            loadData(new Date());
+        });
+
+        function loadData(date){
+            $.getJSON("/json/" + date.Format("yyyy-MM-dd") + ".json", function(data){
+                var dg_data = [];
+                $.each(data, function(i, v){
+                    var tmp = {
+                        "job_name": v.job.name,
+                        "job_host": v.job.host,
+                        "code": v.code,
+                        "error": v.std_error,
+                        "cmd_str": v.cmd_str,
+                        "begin_time": v.begin_time,
+                        "end_time": v.end_time,
+                        "output": v.std_output.replace(/\n/g, "<br/>") 
+                    }
+                    dg_data.push(tmp);
+                });
+                $('#dg_result').datagrid('loadData',{ "total": data.length, "rows" : dg_data });
+            });
+        }
+
+        function initDG(){
+            $('#dg_result').datagrid({
+                title: 'rsync结果查看',
+                nowrap: false,
+                fit: true,
+                loadMsg: "数据加载中，请稍后...",
+                singleSelect: true,
+                remoteSort: false,
+                pagination: false,
+                rownumbers: true,
+                columns: [
+                    [
+                        { field: 'job_name', width: 100, title: '任务名称', align: 'center' },
+                        { field: 'job_host', width: 100, title: 'host', align: 'center' },
+                        { field: 'code', width: 100, title: '执行结果', align: 'center', formatter: function(value,row,index){
+                            return value == 0 ? "成功" : "失败";
+                        } },
+                        { field: 'begin_time', width: 150, title: '开始时间', align: 'center' },
+                        { field: 'end_time', width: 150, title: '结束时间', align: 'center' },
+                        { field: 'cmd_str', width: 450, title: 'rsync命令', align: 'center', formatter: function(value,row,index){
+                            return "<div style='padding:5px;word-wrap:break-word;'>" + value + "</div>";
+                        } },
+                        { field: 'output', width: 450, title: 'output', align: 'center' },
+                        { field: 'error', width: 300, title: 'error', align: 'center' }
+                    ]
+                ],
+                toolbar: '#tb'
+            });
+            $('#dd').datebox({
+                editable:false,
+                onSelect:function(date){
+                    console.log(date);
+                    loadData(date);
+                }
+            });
+            $('#dd').datebox('setValue', new Date().Format("yyyy-MM-dd"));
+        }
+    </script>
+</head>
+<body>  
+    <table id="dg_result"></table>
+    <div id="tb">
+        <input id="dd" class="easyui-datebox" required="required">
+    </div>
+</body>
+</html>  
