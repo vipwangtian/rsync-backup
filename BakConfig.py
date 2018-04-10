@@ -3,6 +3,7 @@
 
 import yaml
 import os
+from BKExceptions import ConfException
 
 class BakConfig(object):
     yaml_path = "conf/config.yaml"
@@ -13,8 +14,17 @@ class BakConfig(object):
         f.close()
         self.yaml_conf = yaml.load(conf)
 
+    def __check_conf(self):
+        pass
+
     def get_jobs(self):
-        return self.yaml_conf["JOB"]
+        if self.yaml_conf:
+            return self.yaml_conf["JOB"]
+        else:
+            raise ConfException("配置文件异常")
 
     def get_rsync_conf(self):
-        return self.yaml_conf["RSYNC"]
+        if self.yaml_conf:
+            return self.yaml_conf["RSYNC"]
+        else:
+            raise ConfException("配置文件异常")

@@ -6,6 +6,7 @@ import os
 import time
 import datetime
 import json
+import traceback
 from BakConfig import BakConfig 
 from RsyncCMD import RsyncCMD
 from common.cmds import cmds
@@ -27,8 +28,10 @@ class RsyncBackup(object):
                 cmd = cmds(cmd_str)
                 end = { "std_output" : cmd.stdo(), "code" : cmd.code(), "std_error" : cmd.stde(), "end_time" : time.strftime("%Y-%m-%d %H:%M:%S",time.localtime(time.time())) }
                 results.append(dict(begin, **end))
-            except:
-                pass
+            except Exception as e:
+                print(job.name + " execute error!")
+                tb = traceback.format_exc()
+                print(tb)
         return results
 
     def save_result(self, results):
@@ -39,9 +42,12 @@ class RsyncBackup(object):
         with open("{0}/{1}.json".format(html_dir, datetime.date.today().strftime(date_formatter)), 'w') as f:
             f.write(json.dumps(results))
 
-
 if __name__ == "__main__":
-    rsync = RsyncBackup()
-    results = rsync.backup()
-    rsync.save_result(results)
-    print(results)
+    try:
+        rsync = RsyncBackup()
+        results = rsync.backup()
+        rsync.save_result(results)
+        print(results)
+    except Exception as e:
+        tb = traceback.format_exc()
+        print(tb)
