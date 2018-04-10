@@ -19,7 +19,8 @@ class BakConfig(object):
 
     def get_jobs(self):
         if self.yaml_conf:
-            return self.yaml_conf["JOB"]
+            jobs = self.yaml_conf["JOB"]
+            return sorted(jobs, key=lambda job:job["priority"], reverse=True)
         else:
             raise ConfException("配置文件异常")
 
